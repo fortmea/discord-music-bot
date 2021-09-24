@@ -54,6 +54,7 @@ client.on("message", async message => {
 async function execute(message, serverQueue) {
     const args = message.content.split(" ");
     const voiceChannel = message.member.voiceChannelID;
+    console.log(voiceChannel)
     if (voiceChannel == undefined) {
         return message.channel.send(`Você precisa estar em um canal de música para executar um comando!`);
     } else {
@@ -98,8 +99,8 @@ async function execute(message, serverQueue) {
                     var connection = await channelToJoin.join();
                     queueContruct.connection = connection;
                     console.log(message.member.guild.id);
-
-                    play(message.member.guild.id, queueContruct.songs[0]);
+                    const msg = message;
+                    play(message.member.guild.id, queueContruct.songs[0], msg);
                 } catch (err) {
                     console.log(err);
                     queue.delete(message.member.guild.id);
@@ -116,12 +117,12 @@ async function execute(message, serverQueue) {
 function skip(message, serverQueue) {
     if (!message.member.voiceChannelID)
         return message.channel.send(
-            "You have to be in a voice channel to stop the music!"
+            "Você precisa estar em um canal de voz para parar a música!"
         );
     if (!serverQueue)
-        return message.channel.send("There is no song that I could skip!");
+        return message.channel.send("Não há musica para pular!");
     console.log(serverQueue.songs.shift());
-    play(message.member.guild.id, serverQueue.songs[0])
+    play(message.member.guild.id, serverQueue.songs[0], message)
 }
 
 function stop(message, serverQueue) {
@@ -131,21 +132,23 @@ function stop(message, serverQueue) {
         );
 
     if (!serverQueue)
-        return message.channel.send("There is no song that I could stop!");
+        return message.channel.send("Não há musica para parar!");
 
     serverQueue.songs = [];
     message.guild.me.voiceChannel.leave();
 }
 
-async function play(guild, song) {
+async function play(guild, song, message) {
     const serverQueue = queue.get(guild);
+    console.log(message);
     if (!song) {
         message.guild.me.voiceChannel.leave();
         queue.delete(guild.id);
         return;
     }
-    const dispatcher = serverQueue.connection.playOpusStream(await ytdl(song.url)).on("finish", () => { serverQueue.songs.shift(); play(guild, serverQueue.songs[0]); }).on("error", error => console.error(error));
+    const stream = await ytdl(song.url);
+    const dispatcher = serverQueue.connection.playOpusStream(stream).on("finish", () => { serverQueue.songs.shift(); play(guild, serverQueue.songs[0]); }).on("error", error => console.error(error));
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 1);
-    serverQueue.textChannel.send(`Start playing: **${song.title}**`);
+    serverQueue.textChannel.send(`Tocando agora: **${song.title}**`);
 }
 client.login(config['token']);
