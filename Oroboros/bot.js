@@ -6,6 +6,7 @@ const client = new Discord.Client()
 const ytdl = require('ytdl-core-discord');
 const queue = new Map();
 const available_commands = ['tocar', 'pular', 'parar'];
+var count = 0;
 client.on('ready', () => {
     console.log('Bot is ready!')
 })
@@ -30,7 +31,7 @@ client.on("message", async message => {
         }
 
         if (command_exists == false) {
-            console.log(message.content.split(" ")[0])
+            //console.log(message.content.split(" ")[0])
             message.channel.send("You need to enter a valid command!");
             return;
         } else {
@@ -54,7 +55,7 @@ client.on("message", async message => {
 async function execute(message, serverQueue) {
     const args = message.content.split(" ");
     const voiceChannel = message.member.voiceChannelID;
-    console.log(voiceChannel)
+    //console.log(voiceChannel)
     if (voiceChannel == undefined) {
         return message.channel.send(`Você precisa estar em um canal de música para executar um comando!`);
     } else {
@@ -89,7 +90,7 @@ async function execute(message, serverQueue) {
                     volume: 5,
                     playing: true
                 };
-
+                console.log(message.member.guild.id + "GUILD ID")
                 queue.set(message.member.guild.id, queueContruct);
 
                 queueContruct.songs.push(song);
@@ -100,15 +101,22 @@ async function execute(message, serverQueue) {
                     queueContruct.connection = connection;
                     console.log(message.member.guild.id);
                     const msg = message;
-                    play(message.member.guild.id, queueContruct.songs[0], msg);
+                    play(message.member.guild.id, msg);
                 } catch (err) {
                     console.log(err);
                     queue.delete(message.member.guild.id);
                     return message.channel.send(err);
                 }
             } else {
-                serverQueue.songs.push(song);
-                return message.channel.send(`${song.title} has been added to the queue!`);
+                if (serverQueue.songs[0]) {
+                    serverQueue.songs.push(song);
+                    return message.channel.send(`**${song.title}** foi adicionado à fila!`);
+                } else {
+                    const channelToJoin = client.channels.get(voiceChannel);
+                    var connection = await channelToJoin.join();
+                    serverQueue.songs.push(song);
+                    play(message.member.guild.id,  message);
+                }
             }
         }
     }
@@ -138,17 +146,28 @@ function stop(message, serverQueue) {
     message.guild.me.voiceChannel.leave();
 }
 
-async function play(guild, song, message) {
+async function play(guild, message) {
     const serverQueue = queue.get(guild);
-    console.log(message);
+    song = serverQueue.songs[0]
+    console.log(guild);
+    //console.log(serverQueue)
+    
+    count = count+1;
+    console.log("CONTAGEM> "+count);
     if (!song) {
+        serverQueue.textChannel.send(`Não há mais itens na fila, saindo...`);
         message.guild.me.voiceChannel.leave();
-        queue.delete(guild.id);
+        queue.delete(guild);
         return;
     }
     const stream = await ytdl(song.url);
-    const dispatcher = serverQueue.connection.playOpusStream(stream).on("finish", () => { serverQueue.songs.shift(); play(guild, serverQueue.songs[0]); }).on("error", error => console.error(error));
+    const dispatcher = serverQueue.connection.playOpusStream(stream).on("end", () => {
+        serverQueue.songs.shift(); play(guild, message);
+
+    }
+    ).on("error", error => console.error(error));
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 1);
     serverQueue.textChannel.send(`Tocando agora: **${song.title}**`);
+    
 }
 client.login(config['token']);
