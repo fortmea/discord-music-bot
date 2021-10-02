@@ -4,6 +4,9 @@
     "description": "Bot created with create-discord-bot CLI",
     "main": "Oroboros/bot.js",
     "author": "create-discord-bot",
+    "scripts": {
+        "start": "node Oroboros/bot.js"
+    },
     "dependencies": {
         "@discordjs/opus": "^0.6.0",
         "bitchute-dl": "0.0.3",
