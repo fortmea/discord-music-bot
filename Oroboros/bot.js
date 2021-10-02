@@ -6,6 +6,14 @@ const client = new Discord.Client()
 const ytdl = require('ytdl-core-discord');
 const queue = new Map();
 const available_commands = ['tocar', 'pular', 'parar'];
+const bitchutedl = require("bitchute-dl");
+const gettitle = require('url-to-title');
+var key;
+if (!process.env.botkey) {
+    key = config['token']
+} else {
+    key = process.env.botkey
+}
 var count = 0;
 client.on('ready', () => {
     console.log('Bot is ready!')
@@ -26,12 +34,10 @@ client.on("message", async message => {
         for (i = 0; i < available_commands.length; i++) {
             if (message.content.split(" ")[0] == prefix + available_commands[i]) {
                 command_exists = true;
-                console.log(message.content.split(" ")[0])
             }
         }
 
         if (command_exists == false) {
-            //console.log(message.content.split(" ")[0])
             message.channel.send("You need to enter a valid command!");
             return;
         } else {
@@ -55,32 +61,27 @@ client.on("message", async message => {
 async function execute(message, serverQueue) {
     const args = message.content.split(" ");
     const voiceChannel = message.member.voiceChannelID;
-    //console.log(voiceChannel)
     if (voiceChannel == undefined) {
         return message.channel.send(`Você precisa estar em um canal de música para executar um comando!`);
     } else {
-        /* console.log(message);
-         
-         if (!voiceChannel)
-             return message.channel.send(
-                 "You need to be in a voice channel to play music!"
-             );
-         const permissions = voiceChannel.permissionsFor(message.client.user);
-         if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
-             return message.channel.send(
-                 "I need the permissions to join and speak in your voice channel!"
-             );
-         }
-     */
         if (args[1] == undefined) {
             return message.channel.send(`Você precisa incluir um link para a música que deseja tocar!`);
         } else {
-            const songInfo = await ytdl.getInfo(args[1]);
-            const song = {
-                title: songInfo.videoDetails.title,
-                url: songInfo.videoDetails.video_url,
-            };
-
+            var song = "";
+            if (bitchutedl.isBitchuteLink(args[1])) {
+                await gettitle(args[1]).then(function (title) {
+                    song = {
+                        title: title,
+                        url: args[1]
+                    }
+                });
+            } else {
+                const songInfo = await ytdl.getInfo(args[1]);
+                song = {
+                    title: songInfo.videoDetails.title,
+                    url: songInfo.videoDetails.video_url,
+                };
+            }
             if (!serverQueue) {
                 const queueContruct = {
                     textChannel: message.channel,
@@ -90,7 +91,6 @@ async function execute(message, serverQueue) {
                     volume: 5,
                     playing: true
                 };
-                console.log(message.member.guild.id + "GUILD ID")
                 queue.set(message.member.guild.id, queueContruct);
 
                 queueContruct.songs.push(song);
@@ -99,7 +99,6 @@ async function execute(message, serverQueue) {
                     const channelToJoin = client.channels.get(voiceChannel);
                     var connection = await channelToJoin.join();
                     queueContruct.connection = connection;
-                    console.log(message.member.guild.id);
                     const msg = message;
                     play(message.member.guild.id, msg);
                 } catch (err) {
@@ -115,9 +114,10 @@ async function execute(message, serverQueue) {
                     const channelToJoin = client.channels.get(voiceChannel);
                     var connection = await channelToJoin.join();
                     serverQueue.songs.push(song);
-                    play(message.member.guild.id,  message);
+                    play(message.member.guild.id, message);
                 }
             }
+
         }
     }
 }
@@ -130,7 +130,7 @@ function skip(message, serverQueue) {
     if (!serverQueue)
         return message.channel.send("Não há musica para pular!");
     console.log(serverQueue.songs.shift());
-    play(message.member.guild.id, serverQueue.songs[0], message)
+    play(message.member.guild.id, message)
 }
 
 function stop(message, serverQueue) {
@@ -148,26 +148,35 @@ function stop(message, serverQueue) {
 
 async function play(guild, message) {
     const serverQueue = queue.get(guild);
+    var stream;
     song = serverQueue.songs[0]
-    console.log(guild);
-    //console.log(serverQueue)
-    
-    count = count+1;
-    console.log("CONTAGEM> "+count);
     if (!song) {
         serverQueue.textChannel.send(`Não há mais itens na fila, saindo...`);
         message.guild.me.voiceChannel.leave();
         queue.delete(guild);
         return;
     }
-    const stream = await ytdl(song.url);
-    const dispatcher = serverQueue.connection.playOpusStream(stream).on("end", () => {
-        serverQueue.songs.shift(); play(guild, message);
-
-    }
-    ).on("error", error => console.error(error));
-    dispatcher.setVolumeLogarithmic(serverQueue.volume / 1);
-    serverQueue.textChannel.send(`Tocando agora: **${song.title}**`);
+    if (bitchutedl.isBitchuteLink(song.url)) {
+        const privateLink = await bitchutedl.getVideoPrivateLink(song.url);
+        stream = await bitchutedl.getVideoStream(privateLink);
+        const dispatcher = serverQueue.connection.playStream(stream).on("end", () => {
+            serverQueue.songs.shift(); play(guild, message);
     
+        }
+        ).on("error", error => console.error(error));
+        dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+    } else {
+        stream = await ytdl(song.url);
+        const dispatcher = serverQueue.connection.playOpusStream(stream).on("end", () => {
+            serverQueue.songs.shift(); play(guild, message);
+    
+        }
+        ).on("error", error => console.error(error));
+        dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+    }
+
+    
+    serverQueue.textChannel.send(`Tocando agora: **${song.title}**`);
+
 }
-client.login(config['token']);
+client.login(key);
