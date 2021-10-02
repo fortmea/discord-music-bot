@@ -1,20 +1,13 @@
 /* Oroboros generated with create-discord-bot CLI */
 const Discord = require('discord.js')
-const config = require('./config.json')
-const prefix = config['prefix']
+const prefix = '!'
 const client = new Discord.Client()
 const ytdl = require('ytdl-core-discord');
 const queue = new Map();
 const available_commands = ['tocar', 'pular', 'parar'];
 const bitchutedl = require("bitchute-dl");
 const gettitle = require('url-to-title');
-var key;
-if (!process.env.botkey) {
-    key = config['token']
-} else {
-    key = process.env.botkey
-}
-var count = 0;
+const key = process.env.botkey
 client.on('ready', () => {
     console.log('Bot is ready!')
 })
