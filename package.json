@@ -5,7 +5,7 @@
     "main": "Oroboros/bot.js",
     "author": "create-discord-bot",
     "scripts": {
-        "start": "node Oroboros/bot.js"
+        "start": "node bot.js"
     },
     "dependencies": {
         "@discordjs/opus": "^0.6.0",
