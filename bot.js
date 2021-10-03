@@ -9,9 +9,10 @@ const queue = new Map();
 const available_commands = ['tocar', 'pular', 'parar'];
 const bitchutedl = require("bitchute-dl");
 const gettitle = require('url-to-title');
+const page = require('./resources/index.html')
 const key = process.env.botkey
 app.get('/', function (req, res) {
-    return res.sendFile('./resources/index.html')
+    return res.sendFile(page)
 });
 client.on('ready', () => {
     console.log('Bot is ready!')
