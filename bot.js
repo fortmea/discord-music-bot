@@ -1,4 +1,5 @@
 /* Oroboros generated with create-discord-bot CLI */
+
 var express = require('express');
 var app = express();
 const Discord = require('discord.js')
@@ -10,8 +11,12 @@ const available_commands = ['tocar', 'pular', 'parar'];
 const bitchutedl = require("bitchute-dl");
 const gettitle = require('url-to-title');
 const key = process.env.botkey
+const discordPresence = require('discord-rpc');
+discordPresence.state = "Testando";
+discordPresence.details = "https://oroboros-bot.herokuapp.com";
+discordPresence.joinSecret = " ";
 app.get('/', function (req, res) {
-    return res.sendFile('index.html', {root:__dirname+'/resources'})
+    return res.sendFile('index.html', { root: __dirname + '/resources' })
 });
 client.on('ready', () => {
     console.log('Bot is ready!')
@@ -159,7 +164,7 @@ async function play(guild, message) {
         stream = await bitchutedl.getVideoStream(privateLink);
         const dispatcher = serverQueue.connection.playStream(stream).on("end", () => {
             serverQueue.songs.shift(); play(guild, message);
-    
+
         }
         ).on("error", error => console.error(error));
         dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
@@ -167,17 +172,18 @@ async function play(guild, message) {
         stream = await ytdl(song.url);
         const dispatcher = serverQueue.connection.playOpusStream(stream).on("end", () => {
             serverQueue.songs.shift(); play(guild, message);
-    
+
         }
         ).on("error", error => console.error(error));
         dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
     }
 
-    
+
     serverQueue.textChannel.send(`Tocando agora: **${song.title}**`);
 
 }
 client.login(key);
+
 app.listen(process.env.PORT || 5000, function () {
 
 });
