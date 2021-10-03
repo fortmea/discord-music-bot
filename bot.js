@@ -11,7 +11,7 @@ const bitchutedl = require("bitchute-dl");
 const gettitle = require('url-to-title');
 const key = process.env.botkey
 app.get('/', function (req, res) {
-    return res.send({ error: true, message: 'hello' })
+    return res.sendFile('./resources/index.html')
 });
 client.on('ready', () => {
     console.log('Bot is ready!')
