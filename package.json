@@ -11,6 +11,7 @@
         "@discordjs/opus": "^0.6.0",
         "bitchute-dl": "0.0.3",
         "discord.js": "^11.6.4",
+        "express": "^4.17.1",
         "ffmpeg": "0.0.4",
         "fluent-ffmpeg": "^2.1.2",
         "get-title-at-url": "^1.1.8",
