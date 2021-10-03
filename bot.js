@@ -10,7 +10,6 @@ const available_commands = ['tocar', 'pular', 'parar'];
 const bitchutedl = require("bitchute-dl");
 const gettitle = require('url-to-title');
 const key = process.env.botkey
-app.use(express.static(path.join(__dirname, 'resources')));
 app.get('/', function (req, res) {
     return res.sendFile('index.html', {root:__dirname+'/resources'})
 });
