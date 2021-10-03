@@ -1,4 +1,6 @@
 /* Oroboros generated with create-discord-bot CLI */
+var express = require('express');
+var app = express();
 const Discord = require('discord.js')
 const prefix = '!'
 const client = new Discord.Client()
@@ -8,6 +10,9 @@ const available_commands = ['tocar', 'pular', 'parar'];
 const bitchutedl = require("bitchute-dl");
 const gettitle = require('url-to-title');
 const key = process.env.botkey
+app.get('/', function (req, res) {
+    return res.send({ error: true, message: 'hello' })
+});
 client.on('ready', () => {
     console.log('Bot is ready!')
 })
@@ -173,3 +178,6 @@ async function play(guild, message) {
 
 }
 client.login(key);
+app.listen(process.env.PORT || 5000, function () {
+
+});
