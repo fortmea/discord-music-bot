@@ -14,11 +14,20 @@
         integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/"
         crossorigin="anonymous"></script>
     <script type="module" src="https://unpkg.com/@rocktimsaikia/github-card@latest?module"></script>
+    <style>
+        #corpo {
+            display: flex;
+        }
+
+        .border-transparent {
+            border-color: transparent !important;
+        }
+    </style>
 </head>
 
-<body class="container bg-dark">
-    <div class="text-light">
-        <div style="margin-left:1em">
+<body class="container bg-dark" id="corpo">
+    <div class="card text-light bg-transparent border-transparent" style="margin: auto;">
+        <div class="card-body bg-transparent" style="margin-left:1em">
             <p>
             <h1>Sobre o projeto:</h1>
             </p>
@@ -28,11 +37,12 @@
             <p>
                 Nenhum link para acesso ao bot será disponibilizado inicialmente, mas sinta-se livre para entrar em
                 contato
-                por <a href="mailto:joao@piroca.ninja">email</a> comigo;<br>Meu github também está disponível abaixo:</p>
+                por <a href="mailto:joao@piroca.ninja">email</a> comigo;<br>Meu github também está disponível abaixo:
+            </p>
         </div>
-    </div>
-    <div style="margin-left:33%; margin-right:33%">
-        <github-card data-user="fortmea" data-theme="dark"></github-card>
+        <div style="margin:auto;" class="card-body bg-transparent">
+            <github-card data-user="fortmea" data-theme="dark"></github-card>
+        </div>
     </div>
 </body>
 
